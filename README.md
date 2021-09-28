@@ -1,7 +1,7 @@
 # 
-# Online Apply for Classes 
+# Online Class Application System
 
-# 온라인 수강신청 시스템 
+# 온라인 수강 신청 시스템 
 
 본 예제는 MSA/DDD/Event Storming/EDA 를 포괄하는 분석/설계/구현/운영 전체 구현과제를 구성한 예제입니다.
 이는 Cloud Native Application의 개발에 요구되는 체크포인트들을 통과하기 위한 예시 답안을 포함합니다.
