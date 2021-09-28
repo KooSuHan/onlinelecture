@@ -1,5 +1,5 @@
 # 
-# Online Apply for Classes 
+# Online Class Application System 
 
 # 온라인 수강신청 시스템 
 
