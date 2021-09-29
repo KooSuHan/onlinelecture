@@ -139,14 +139,12 @@
    3. 결제가 취소되면 배송이 취소된다 (ok) 
 
 
-### 모델 완료
+### 완료 모델
  
 ![화면 캡처 전체 모양](https://user-images.githubusercontent.com/88864399/135220246-a68a5ee1-7a53-4afc-830b-a2e0d5dfa506.png)
 
 
 ### 비기능 요구사항에 대한 검증
-
-![image](https://user-images.githubusercontent.com/49930207/131438968-8c4913fa-1bf3-4461-8586-234cfa657c2f.png)
 
 트랜잭션
 강의 결제가 완료 되어야만 수강 신청 완료 할 수 있음 Sync 호출
