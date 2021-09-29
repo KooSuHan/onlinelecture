@@ -156,14 +156,19 @@
   - 학생은 MyPage에서 등록된 강의와 수강 및 교재 배송 상태를 확인할 수 있어야 한다. (비동기식으로 Kafka를 통해 이벤트를 수신)
   
 
-## 헥사고날 아키텍처 다이어그램 도출
+## 헥사고날 아키텍처 다이어그램 도출1
+
+![화면 캡처 MsaEZ로 만든 Hexagonal](https://user-images.githubusercontent.com/88864399/135224234-185535f4-f5d9-4629-8edc-cda10ff52176.png)
+
+  - MsaEz의 Hexagonal 기능을 활용하여 헥사고날 다이어그램을 추출함. 
+
+## 헥사고날 아키텍처 다이어그램 도출2
 ![헥사고날 아키텍쳐 이미지](https://user-images.githubusercontent.com/88864399/133424672-e33313cf-0260-411d-a8f8-1149cb691d22.png)
 
-
-
-  - Chris Richardson, MSA Patterns 참고하여 Inbound adaptor와 Outbound adaptor를 구분함
-  - 호출관계에서 PubSub 과 Req/Resp 를 구분함
-  - 서브 도메인과 바운디드 컨텍스트의 분리:  각 팀의 KPI 별로 아래와 같이 관심 구현 스토리를 나눠가짐
+  
+  - MsaEz를 통해 추출한 헥사고날 다이어그램을 통해 다음과 같이 작성
+  - 호출관계에서 PubSub 과 Req/Resp 를 구분하여 작성
+  - Sub 도메인과 Bounded Context를 분리하여 작성 
 
 
 # 구현:
