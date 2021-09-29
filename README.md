@@ -1,4 +1,4 @@
-# 
+
 # Online Class Application System 
 
 # 온라인 수강신청 시스템 
@@ -125,7 +125,7 @@
  
 ### 기능적/비기능적 요구사항을 만족하는지 검증
 
- ![업무처리 흐름2](https://user-images.githubusercontent.com/88864399/135218985-2874aaf4-41c2-4b5a-ab2b-3c7d4fdf55f0.png)
+![업무처리 흐름2](https://user-images.githubusercontent.com/88864399/135218985-2874aaf4-41c2-4b5a-ab2b-3c7d4fdf55f0.png)
 
 - 요구사항 만족 검증(1 : 정상처리)     
    1. 수강생이 강의를 신청한다 (ok)
@@ -140,11 +140,9 @@
 
 
 ### 모델 완료
-![image](https://user-images.githubusercontent.com/49930207/131438677-e65d348a-775e-4121-9982-f723e1cbb1c7.png)
+ 
+![화면 캡처 전체 모양](https://user-images.githubusercontent.com/88864399/135220246-a68a5ee1-7a53-4afc-830b-a2e0d5dfa506.png)
 
-    - 마이크로서비스별 Aggregate , Evnecnt, Policy, Command Attribute 정의
-    - Naming변경
-    - Mypage CQRS 정의
 
 ### 비기능 요구사항에 대한 검증
 
