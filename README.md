@@ -122,29 +122,8 @@
 
 ### Aggregate으로 묶기
 ![Aggregate](https://user-images.githubusercontent.com/49930207/131058844-53e7785f-1dd2-49e0-9bd4-1ad30af43527.png)
-
-    - 수강신청, 강의등록, 결제내역, 배송내역 업무영역 단위로 묶음
-
-### Bounded Context로 묶기
-
-![Bounded Context](https://user-images.githubusercontent.com/49930207/131061428-9b1f1367-97bf-448c-b3e7-70cdcdc442af.png)
-
-    - 도메인 서열 분리 
-        - Core Domain:  class, course : 없어서는 안될 핵심 서비스이며, 연견 Up-time SLA 수준을 99.999% 목표, 배포주기는 class 의 경우 1주일 1회 미만, course 의 경우 1개월 1회 미만
-        - General Domain:   payment : 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 (핑크색으로 이후 전환할 예정)
-
-### 폴리시의 이동과 컨텍스트 매핑 (점선은 Pub/Sub, 실선은 Req/Resp)
-
-![Policy & Req/Resp & Pub/Sub](https://user-images.githubusercontent.com/49930207/131070356-6fbd5fbc-5b17-41a8-bcde-ca3388166f75.png)
-        - 서비스 간의 관계 확인
-      
-### 완성된 1차 모형
-
-![완성된 1차 모형](https://user-images.githubusercontent.com/49930207/131074402-af4a05e9-c044-4159-8b9b-26631735f05d.png)
-
-    - 서비스 간의 관계 추가
-
-### 1차 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
+ 
+### 기능적/비기능적 요구사항을 만족하는지 검증
 
 ![image](https://user-images.githubusercontent.com/49930207/131092558-df5ef712-257b-4aa4-9b49-908db9f13013.png)
     
