@@ -1020,6 +1020,41 @@ phases:
 
 
 
+## HPA(autoscale) 
+
+각 마이크로서비스에 부하가 들어올 경우, 동적으로 replica를 확장하여, 각 서비스가 문제 없이 구동될 수 있도록 기능을 적용하고자 함.   
+
+
+- class 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. CPU 사용량이 30%를 넘으면 replica 를 최대 10개까지 늘릴 수 있도록 설정해준다. 
+```
+kubectl autoscale deploy class --min=1 --max=10 --cpu-percent=30
+```
+- siege를 통해 동시접속 200, 50초 동안 부하를 걸어준다. 
+```
+siege -c200 -t50S -v --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}'
+```
+- 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
+![watch_HPA](https://user-images.githubusercontent.com/88864399/135501197-151e1eac-3363-4be7-9e64-80f875f49d01.png)
+
+
+- 부하를 주었지만, 최대 CPU 3%를 넘기지 못하고 스케일 아웃 되지 못하였음.
+```
+NAME                            READY   STATUS    RESTARTS   AGE
+pod/class-6796576b88-sht9h      1/1     Running   0          70m
+pod/delivery-8494cc7c96-qqgbd   0/1     Error     49         3h59m
+pod/gateway-86d945d69-zvbcp     1/1     Running   0          4h8m
+pod/mypage-5f77cf97cb-bbq66     1/1     Running   0          3h8m
+pod/payment-5f87c76694-2kh8s    1/1     Running   0          8h
+
+NAME                                        REFERENCE          TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/class   Deployment/class   1%/30%    1         10        1          36m
+```
+
+- siege 수행 결과 모두 수행되는 안타까운 모습을 보이고 있다.
+![hpa_부하](https://user-images.githubusercontent.com/88864399/135501645-032abf1d-6d29-43c5-afe2-f74cda94c465.png)
+
+ 
+
 ## Liveness Probe(Self-healing)
 
 - buildspec.yaml파일에 Liveness Probe 가 동작 할 수 있도록 한다. 
@@ -1136,52 +1171,6 @@ Shortest transaction:           0.01
 ```
 - 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌. 하지만, 49% 가 성공하였고, 51%가 실패했다는 것은 고객 사용성에 있어 좋지 않기 때문에 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
 
-## 오토스케일 아웃
-앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다. 
-
-
-- 강좌 관리 및 강자 스케쥴 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 30프로를 넘어서면 replica 를 10개까지 늘려준다
-```
-kubectl autoscale deploy class --min=1 --max=10 --cpu-percent=30
-```
-- CB 에서 했던 방식대로 워크로드를 50초 동안 걸어준다. 
-```
-siege -c50 -t60S -r10 -v --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}'
-```
-- 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
-```
-watch kubectl get pod,hpa
-```
-- 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
-```
-NAME                                        REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler.autoscaling/class   Deployment/class   <unknown>/30%   1         10        3          8m53s
-
-NAME                           READY   STATUS    RESTARTS   AGE
-pod/class-5cccb78cb5-2gfdp     1/1     Running   11         50m
-pod/course-7489886cf7-jpxcr    1/1     Running   0          21h
-pod/delivery-c7b7d6d7d-w4crq   1/1     Running   0          148m
-pod/gateway-5c8c77f4f7-wfjbh   1/1     Running   0          21h
-pod/mypage-7dbb4cd488-bccw6    1/1     Running   0          50m
-pod/payment-59655b4664-gfgnr   1/1     Running   0          110m
-pod/siege                      1/1     Running   0          77m
-:
-```
-- siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
-```
-Transactions:                  27181 hits
-Availability:                 100.00 %
-Elapsed time:                  59.47 secs
-Data transferred:               8.50 MB
-Response time:                  0.11 secs
-Transaction rate:             457.05 trans/sec
-Throughput:                     0.14 MB/sec
-Concurrency:                   49.04
-Successful transactions:       27181
-Failed transactions:               0
-Longest transaction:            0.79
-Shortest transaction:           0.00
-```
 
 
 ## 무정지 재배포
