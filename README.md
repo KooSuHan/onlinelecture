@@ -560,10 +560,10 @@ Transfer-Encoding: chunked
 ```
 
 
-## 폴리글랏 퍼시스턴스
+## polyglot 
 
 Delivery(배송) 서비스는 mysql 을 사용하여 구현하였다. 
-Spring Cloud JPA를 사용하여 개발하였기 때문에 소스의 변경 부분은 전혀 없으며, 단지 데이터베이스 제품의 설정 (pom.xml, application.yml) 만으로 mysql 에 부착시켰다
+Spring Cloud JPA를 사용하여 개발하였기 때문에 소스의 변경 부분은 전혀 없으며, 단지 Dependency 내 데이터베이스 설정(pom.xml, application.yml)을 변경하는 것으로 기존 H2 DB를 사용하는 것과 mysql DB를 사용하는 것으로 동작할 수 있도록 처리하였다.  
 
 ```
 # pom.yml (Delivery)
@@ -592,80 +592,18 @@ Spring Cloud JPA를 사용하여 개발하였기 때문에 소스의 변경 부�
     show-sql: true 
 
 ```
-
-- mysql 서비스 확인 (kubectl get all)
-
-```
-root@labs-2125792906:/home/project# kubectl get all
-NAME                                    READY   STATUS    RESTARTS   AGE
-pod/mysql-1631696398-59dbb78754-j4dt5   1/1     Running   0          85m
-pod/siege-d484db9c-7x7pj                1/1     Running   0          8m16s
-pod/ubuntu                              1/1     Running   0          8m21s
-
-NAME                       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-service/kubernetes         ClusterIP   10.100.0.1     <none>        443/TCP    91m
-service/mysql-1631696398   ClusterIP   10.100.200.1   <none>        3306/TCP   85m
-
-NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/mysql-1631696398   1/1     1            1           85m
-deployment.apps/siege              1/1     1            1           8m17s
-
-NAME                                          DESIRED   CURRENT   READY   AGE
-replicaset.apps/mysql-1631696398-59dbb78754   1         1         1       85m
-replicaset.apps/siege-d484db9c                1         1         1       8m17s
-```
-- mysql client 에서 테스트한 데이터 확인
-```
-root@ubuntu:/# mysql -h mysql-1631696398 -p
-Enter password: 
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 948
-Server version: 5.7.30 MySQL Community Server (GPL)
-
-Copyright (c) 2000, 2021, Oracle and/or its affiliates.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql> use class
-Reading table information for completion of table and column names
-You can turn off this feature to get a quicker startup with -A
-
-Database changed
-
-mysql> show tables;
-+--------------------+
-| Tables_in_class    |
-+--------------------+
-| delivery_table     |
-| hibernate_sequence |
-+--------------------+
-2 rows in set (0.00 sec)
-
-mysql> select * from delivery_table
-    -> ;
-+----+--------+----------+-----------------+-------+------------------+
-| id | addr   | apply_id | delivery_status | name  | telelephone_info |
-+----+--------+----------+-----------------+-------+------------------+
-|  1 | JOONGU | 1        | DeliveryStart   | name2 | 012-2345         |
-+----+--------+----------+-----------------+-------+------------------+
-1 row in set (0.00 sec)
-
-```
+ 
 
 ## CQRS
 
- - 강의 신청정보, 결제상태, 배송상태 등을 조회할 수 있도록 CQRS로 구현함
- - Class, Payment의 Status를 통합해서 조회하기 때문에 다른 핵심 서비스들의 성능저하 이슈를 해결할 수 있다.
- - 비동기식으로 Kafka를 통해 이벤트를 수신하게 되면 별도로 관리한다
-
-[mypage > src > main > java > team > MyPageViewHandler.java]
+ - Class, Payment, Delivery 등을 통해 생성된 수강신청, 결제, 배송 정보를 별도의 서비스를 통해 조회할 수 있도록 하여 CQRS로 구현함  
+ - 비동기식으로 Kafka를 통해 이벤트를 별도로 수신하여 처리될 수 있도록 관리한다
 
 
 ```
+MyPageViewHandler.java
+~~
+
   @StreamListener(KafkaProcessor.INPUT)
     public void whenClassRegisted_then_CREATE_1 (@Payload ClassRegisted classRegisted) {
         try {
