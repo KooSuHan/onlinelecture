@@ -903,7 +903,11 @@ server:
 
 ## CI/CD 설정
 
-- AWS가 제공하는 codebuild 사용히여 pipeline생성 및 Deploy
+- AWS가 제공하는 codebuild를 통해 buildspec.yml 파일을 사용하여 pipeline생성 및 Deploy
+
+![codebuild2](https://user-images.githubusercontent.com/88864399/135491714-6404e7fd-912e-43dc-a388-981444cc0e67.png)
+
+- buildspec.yml 파일(예시, class)
 
 ```  
 version: 0.2
@@ -1014,10 +1018,46 @@ phases:
 #    - '/root/.m2/**/*'
 ``` 
 
-- onlineclass 서비스 배포 : git의 변경 내용에 따라 자동으로 Build
 
-![codebuild](https://user-images.githubusercontent.com/88864399/135387185-9fd07a6a-9e9c-4289-b752-02877dbf2cfd.png)
+
+## Liveness Probe(Self-healing)
+
+- buildspec.yaml파일에 Liveness Probe 가 동작 할 수 있도록 한다. 
+
+```
+              spec:
+                containers:
+                  - name: delivery
+                    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$_PROJECT_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
+                    ports:
+                      - containerPort: 8080
+                    readinessProbe:
+                      httpGet:
+                        path: '/deliveries'
+                        port: 8080
+                      initialDelaySeconds: 20
+                      timeoutSeconds: 2
+                      periodSeconds: 5
+                      failureThreshold: 10
+                    livenessProbe:
+                      httpGet:
+                        path: '/deliveries'
+                        port: 8080
+                      initialDelaySeconds: 120
+                      timeoutSeconds: 2
+                      periodSeconds: 5
+                      failureThreshold: 5
+		      
+~~~
+
+``` 
   
+- Port를 변경하여 kubelet이 지속적으로 실행중인 컨테이너의 Socket을 열려고 시도하고 정상이 아니기에 컨테이너를 재시작한다. RESTARTS 값이 올라감을 확인할 수 있다. 
+
+![livenessProbe](https://user-images.githubusercontent.com/88864399/135493638-6b49ff05-b92c-4df3-9948-b3419bb0e998.png)
+
+
+
 
 ## 동기식 호출 / 서킷 브레이킹 / 장애격리
 
@@ -1230,29 +1270,6 @@ Shortest transaction:           0.00
 ```
 
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
-
-## Self-healing (Liveness Probe)
-
-- buildspec.yaml파일에 Liveness
-
-![image](https://user-images.githubusercontent.com/88864740/133557236-8a774569-b6cd-4afb-acf2-8dba2e36129f.png)
-
-
-- siege 로 Class 서비스 부하주기 (200명 10초 동시접근)
-
-```
-  siege -c200 -t10s -r5 -v --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}'
-```
-
-
-![image](https://user-images.githubusercontent.com/20183369/133556725-fef2b6e0-16ce-4cd6-bfe1-5da07164c54d.png)
-
-- 부하 후 Restart count 올라간것 확인가능
-
-![image](https://user-images.githubusercontent.com/20183369/133556797-6f6a5dc9-e105-4a04-9aaf-50722f5438c0.png)
-
-
-
 
 
 
