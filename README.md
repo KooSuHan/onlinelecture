@@ -173,7 +173,7 @@
 
 # 구현:
 
-분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 Bounded Context 별로 대변되는 마이크로 서비스들을 Sping-Boot로 구현하였다.  
+분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 Bounded Context 별로 대변되는 마이크로 서비스들을 Sping-Boot로 구현하였다. (각 서비스 분산을 위한 gateway 서비스도 구현하였다)   
 
 ```
 cd class
@@ -181,9 +181,6 @@ mvn spring-boot:run
 
 cd payment
 mvn spring-boot:run  
-
-cd gateway
-mvn spring-boot:run
 
 cd delivery
 mvn spring-boot:run
@@ -194,6 +191,8 @@ mvn spring-boot:run
 cd mypage
 mvn spring-boot:run
 
+cd gateway
+mvn spring-boot:run
 
 ```
 
