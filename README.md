@@ -125,13 +125,13 @@
 ![Aggregate](https://user-images.githubusercontent.com/49930207/131058844-53e7785f-1dd2-49e0-9bd4-1ad30af43527.png)
  
 ### Bounded Context로 묶기
+![bindcontext](https://user-images.githubusercontent.com/88864399/135450568-b8c20816-c32a-455f-8f7d-ec60213e7c0b.png)
 
 
 ### Policy의 이동과 Context 매핑 (점선은 Pub/Sub, 실선은 Req/Resp)
+![pubsub](https://user-images.githubusercontent.com/88864399/135450578-fcf0dcf5-cee3-4b3b-aa24-007856b6dfc8.png)
 
- 
 ### 기능적/비기능적 요구사항을 만족하는지 검증
-
 ![요구사항검증](https://user-images.githubusercontent.com/88864399/135446489-e7926c1b-1626-4bb1-892f-605ecda350da.png)
 
 - 요구사항 만족 검증(1 : 정상처리)     
