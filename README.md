@@ -903,16 +903,14 @@ server:
 
 ## CI/CD 설정
 
-### codebuild 사용
-
-* codebuild를 사용하여 pipeline 생성 및 배포
+- AWS가 제공하는 codebuild 사용히여 pipeline생성 및 Deploy
 
 ```  
 version: 0.2
 
 env:
   variables:
-    _PROJECT_NAME: "user05-mypage"
+    _PROJECT_NAME: "user0202-class"
 
 phases:
   install:
@@ -946,49 +944,57 @@ phases:
       - kubectl config set-credentials admin --token="$KUBE_TOKEN"
       - kubectl config set-context default --cluster=k8s --user=admin
       - kubectl config use-context default
+      - echo $KUBE_URL
+      - echo $KUBE_TOKEN
+      - kubectl config current-context
       - |
           cat <<EOF | kubectl apply -f -
           apiVersion: v1
           kind: Service
           metadata:
-            name: mypage
-            namespace: team05
+            name: class
+            namespace: user02
             labels:
-              app: mypage
+              app: class
           spec:
             ports:
               - port: 8080
                 targetPort: 8080
             selector:
-              app: mypage
+              app: class
           EOF
       - |
           cat  <<EOF | kubectl apply -f -
           apiVersion: apps/v1
           kind: Deployment
           metadata:
-            name: mypage
-            namespace: team05
+            name: class
+            namespace: user02
             labels:
-              app: mypage
+              app: class
           spec:
             replicas: 1
             selector:
               matchLabels:
-                app: mypage
+                app: class
             template:
               metadata:
                 labels:
-                  app: mypage
+                  app: class
               spec:
                 containers:
-                  - name: mypage
+                  - name: class
                     image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$_PROJECT_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
                     ports:
                       - containerPort: 8080
+                    resources:
+                      limits:
+                        cpu: 500m
+                      requests:
+                        cpu: 500m       
                     readinessProbe:
                       httpGet:
-                        path: '/mypages'
+                        path: '/classes'
                         port: 8080
                       initialDelaySeconds: 20
                       timeoutSeconds: 2
@@ -996,7 +1002,7 @@ phases:
                       failureThreshold: 10
                     livenessProbe:
                       httpGet:
-                        path: '/mypages'
+                        path: '/classes'
                         port: 8080
                       initialDelaySeconds: 180
                       timeoutSeconds: 2
