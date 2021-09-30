@@ -235,7 +235,10 @@ replicaset.apps/payment-5f87c76694   1         1         1       4h27m
 
 ### 적용 후 REST API 테스트
  
-//수강 신청 :: 등록 
+- 등록
+
+1. 수강 신청 
+
 ```
 http POST http://a6ee5f8662eb24e6a959e1de66f329e3-532480599.ap-northeast-2.elb.amazonaws.com/classes studentName="학생2" classId="2" addr="SEOUL NAMGU" telephoneInfo="010-1234-2345" payMethod="CARD" payAccount="1234-2334-4556-7890" applyStatus="ApplyRequest"
 
@@ -266,10 +269,11 @@ Transfer-Encoding: chunked
 }
 ```
 
-//수강 등록 확인
+2. 수강 등록 확인
 
-http GET http://localhost:8081/classes
 ```
+http GET http://localhost:8081/classes
+
 HTTP/1.1 200 
 Content-Type: application/hal+json;charset=UTF-8
 Date: Thu, 30 Sep 2021 14:09:55 GMT
@@ -335,9 +339,10 @@ Transfer-Encoding: chunked
 }
 ```
 
-//결제 확인
-http GET http://localhost:8083/payments
+3. 결제 확인
 ```
+http GET http://localhost:8083/payments
+
 HTTP/1.1 200 
 Content-Type: application/hal+json;charset=UTF-8
 Date: Thu, 30 Sep 2021 14:11:08 GMT
