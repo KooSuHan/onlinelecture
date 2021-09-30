@@ -201,42 +201,35 @@ mvn spring-boot:run
 
 ```
 
-- 아래 부터는 AWS 클라우드의 EKS 서비스 내에 서비스를 모두 배포 후 설명을 진행한다.
+- AWS 클라우드의 EKS 서비스 내에 서비스를 모두 배포 후 상세 정보를 조회한다. : namespace user02로 생성 
 ```
-root@labs-2125792906:/home/project/team/delivery# kubectl get all -n team05
+root@labs-389288629:/home/project# kubectl get all -n user02
 NAME                           READY   STATUS    RESTARTS   AGE
-pod/class-d88578c44-jszd8      1/1     Running   0          68m
-pod/course-7489886cf7-jpxcr    1/1     Running   0          68m
-pod/delivery-c7b7d6d7d-svj7t   1/1     Running   0          5s
-pod/gateway-5c8c77f4f7-wfjbh   1/1     Running   0          68m
-pod/mypage-59bd496598-lzpxc    1/1     Running   0          54m
-pod/payment-6f797bc88f-2dxl7   1/1     Running   0          68m
-pod/siege                      1/1     Running   0          33m
+pod/class-6d99b46784-l9qpr     1/1     Running   0          52m
+pod/gateway-86d945d69-zvbcp    1/1     Running   0          6m48s
+pod/mypage-84d8c6f477-p6r2h    1/1     Running   0          4h39m
+pod/payment-5f87c76694-2kh8s   1/1     Running   0          4h27m
 
-NAME               TYPE           CLUSTER-IP       EXTERNAL-IP                                                                  PORT(S)          AGE
-service/class      ClusterIP      10.100.161.69    <none>                                                                       8080/TCP         67m
-service/course     ClusterIP      10.100.157.122   <none>                                                                       8080/TCP         68m
-service/delivery   ClusterIP      10.100.57.150    <none>                                                                       8080/TCP         66m
-service/gateway    LoadBalancer   10.100.87.132    ab6c51987a9bf4492826b76503de84b2-1875639511.ca-central-1.elb.amazonaws.com   8080:32645/TCP   57m
-service/mypage     ClusterIP      10.100.101.186   <none>                                                                       8080/TCP         57m
-service/payment    ClusterIP      10.100.39.160    <none>                                                                       8080/TCP         68m
+NAME              TYPE           CLUSTER-IP       EXTERNAL-IP                                                                   PORT(S)        AGE
+service/class     ClusterIP      10.100.38.135    <none>                                                                        8080/TCP       52m
+service/gateway   LoadBalancer   10.100.113.249   a6ee5f8662eb24e6a959e1de66f329e3-532480599.ap-northeast-2.elb.amazonaws.com   80:32545/TCP   35m
+service/mypage    ClusterIP      10.100.194.107   <none>                                                                        8080/TCP       4h39m
+service/payment   ClusterIP      10.100.50.151    <none>                                                                        8080/TCP       4h27m
 
-NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/class      1/1     1            1           68m
-deployment.apps/course     1/1     1            1           68m
-deployment.apps/delivery   1/1     1            1           6s
-deployment.apps/gateway    1/1     1            1           68m
-deployment.apps/mypage     1/1     1            1           54m
-deployment.apps/payment    1/1     1            1           68m
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/class     1/1     1            1           52m
+deployment.apps/gateway   1/1     1            1           35m
+deployment.apps/mypage    1/1     1            1           4h39m
+deployment.apps/payment   1/1     1            1           4h27m
 
 NAME                                 DESIRED   CURRENT   READY   AGE
-replicaset.apps/class-d88578c44      1         1         1       68m
-replicaset.apps/course-7489886cf7    1         1         1       68m
-replicaset.apps/delivery-c7b7d6d7d   1         1         1       6s
-replicaset.apps/gateway-5c8c77f4f7   1         1         1       68m
-replicaset.apps/mypage-59bd496598    1         1         1       54m
-replicaset.apps/payment-6f797bc88f   1         1         1       68m
+replicaset.apps/class-6d99b46784     1         1         1       52m
+replicaset.apps/gateway-6df7565487   0         0         0       35m
+replicaset.apps/gateway-86d945d69    1         1         1       6m48s
+replicaset.apps/mypage-84d8c6f477    1         1         1       4h39m
+replicaset.apps/payment-5f87c76694   1         1         1       4h27m
 ```
+
 ![클라우드EKS](https://user-images.githubusercontent.com/88864740/133535542-40d69962-f66a-4650-837e-91720ea45075.png)
 
 ## DDD 의 적용
