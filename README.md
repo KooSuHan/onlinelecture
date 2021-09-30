@@ -990,12 +990,10 @@ phases:
 #    - '/root/.m2/**/*'
 ``` 
 
-- mypage 서비스 배포 
-![image](https://user-images.githubusercontent.com/49930207/133380367-11c931d6-1fe3-43cd-bb83-fb716166fcff.png)
- 
-- mypage 서비스 배포 진행 단계 
-![image](https://user-images.githubusercontent.com/49930207/133554065-7f2a9e2f-1d81-4aa4-a550-06073c6054c8.png)
+- onlineclass 서비스 배포 : git의 변경 내용에 따라 자동으로 Build
 
+![codebuild](https://user-images.githubusercontent.com/88864399/135387185-9fd07a6a-9e9c-4289-b752-02877dbf2cfd.png)
+  
 
 ## 동기식 호출 / 서킷 브레이킹 / 장애격리
 
