@@ -125,7 +125,7 @@
  
 ### 기능적/비기능적 요구사항을 만족하는지 검증
 
-![업무처리 흐름2](https://user-images.githubusercontent.com/88864399/135218985-2874aaf4-41c2-4b5a-ab2b-3c7d4fdf55f0.png)
+![요구사항검증](https://user-images.githubusercontent.com/88864399/135446489-e7926c1b-1626-4bb1-892f-605ecda350da.png)
 
 - 요구사항 만족 검증(1 : 정상처리)     
    1. 수강생이 강의를 신청한다 (ok)
