@@ -183,10 +183,7 @@ cd payment
 mvn spring-boot:run  
 
 cd delivery
-mvn spring-boot:run
-
-cd course
-mvn spring-boot:run
+mvn spring-boot:run 
 
 cd mypage
 mvn spring-boot:run
