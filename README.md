@@ -811,154 +811,16 @@ public class PaymentServiceFallback implements PaymentService {
 
 
 
-## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
-
-class(수강취소) 후 payment(결제취소) 서비스로 알려주는 행위는 동기식이 아니라 비 동기식으로 처리하여 payment(결제) 서비스 시스템 문제로 인해 수강취소 관리가 블로킹 되지 않도록 처리한다.
-
-- 이를 위하여 수강 신청/취소 시 자체 DB에 직접 기록을 남긴 후에 곧바로 수강 신청/취소 내용을 도메인 이벤트를 카프카로 송출한다(Publish)
-
-```
-package classnew;
-
-import javax.persistence.*;
-import org.springframework.beans.BeanUtils;
-import java.util.List;
-import java.util.Date;
-
-import classnew.external.Payment;
-import classnew.external.PaymentService;
-
-@Entity
-@Table(name="Class_table")
-public class Class {
-
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
-    private String studentName;
-    private String addr;
-    private String telephoneInfo;
-    private String payMethod;
-    private String payAccount;
-    private String applyStatus;
-    private Long courseId;
-
- @PostUpdate
-    public void onPostUpdate(){
-        //this.setPaymentId(this.getOrderId());
-        this.setApplyStatus("CLASS_CANCELED"); // path=classes의 applyStatus상태 업데이트
-
-        ClassCanceled classCanceled = new ClassCanceled();
-
-        classCanceled.setClassId(this.getId());
-        classCanceled.setApplyStatus(this.getApplyStatus());
-
-        BeanUtils.copyProperties(this, classCanceled);
-        classCanceled.publishAfterCommit();
-
-
-    }
-    
-```
-
-- 강의 등록/수정 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
-
-```
-  
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverClassCanceled_PayCancel(@Payload ClassCanceled classCanceled) {
-
-        if (classCanceled.isMe()) {
-            System.out.println("##### listener PaymentCancellation : " + classCanceled.toJson() + "\n\n");
-
-            List<Payment> paymentList = paymentRepository.findByApplyId(String.valueOf(classCanceled.getId()));
-
-            for (Payment payment : paymentList) {
-                payment.setPayStaus("PaymentCancelled");
-                paymentRepository.save(payment);
-            }
-        }
-        return;
-    }
-
-    // Sample Logic //
-    // Payment payment = new Payment();
-    // paymentRepository.save(payment);
-
-    @StreamListener(KafkaProcessor.INPUT)
-    public void whatever(@Payload String eventString) {
-    }
-
-}
-
-```
-- 실제 구현을 하자면, 수강생은 수강 신청/신청취소를 한 경우, 수강신청상태,결제상태, 배송상태 정보를 Mypage Aggregate 내에서 조회 가능
-  
-```
-     @StreamListener(KafkaProcessor.INPUT)
-    public void whenClassCanceled_then_UPDATE_3(@Payload ClassCanceled classCanceled) {
-        try {
-            if (!classCanceled.validate()) return;
-                // view 객체 조회
-            System.out.println("\n\n##### listener classCanceled : " + classCanceled.toJson() + "\n\n");
-
-                List<Mypage> mypageList = mypageRepository.findByApplyId(String.valueOf(classCanceled.getId()));
-                for(Mypage mypage : mypageList){
-                    // view 객체에 이벤트의 eventDirectValue 를 set 함
-                    mypage.setApplyStaus("CancelRequest");
-                // view 레파지 토리에 save
-                    mypageRepository.save(mypage);
-                }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-    @StreamListener(KafkaProcessor.INPUT)
-    public void whenPaymentCanceled_then_UPDATE_4(@Payload PaymentCanceled paymentCanceled) {
-        try {
-            if (!paymentCanceled.validate()) return;
-                // view 객체 조회
-                System.out.println("\n\n##### listener PaymentCanceled : " + paymentCanceled.toJson() + "\n\n");
-
-                List<Mypage> mypageList = mypageRepository.findByApplyId(paymentCanceled.getApplyId());
-                for(Mypage mypage : mypageList){
-                    // view 객체에 이벤트의 eventDirectValue 를 set 함
-                    mypage.setApplyStaus("ApplyCanceled");
-                    mypage.setPayStatus("PayCanceled");
-                    // view 레파지 토리에 save
-                    mypageRepository.save(mypage);
-                }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-```
-
-
-
-- 수강 취소 (성공) 
-![class_canceled](https://user-images.githubusercontent.com/88864740/133549648-2b0097c9-2149-4550-b762-76aeb59e9e26.png)
-
-- 결제 취소(성공)
-![payment_canceled](https://user-images.githubusercontent.com/88864740/133549698-2af75a62-32db-41fd-b9b1-4f182e493659.png)
-
-
-- PAYMENT(결제) 서비스가 내려가있어도 비동기식으로 CLASS(수강 취소) 성공 되는 부분 확인
-![비동기 payment](https://user-images.githubusercontent.com/88864740/133549843-1cd5ec1e-b0f0-4612-8a5f-5faaede3a44f.png)
-
-
-
 ## Gateway 
 
-- Gateway 생성을 통하여 마이크로서비스들의 진입점을 통일시킴
-[gateway > src > main > resource > application.yml]
+- Gateway 생성하여 각각의 마이크로서비스들을 하나의 통로(진입점)를 통하여 처리될 수 있도록 구현. 
 
-Gateway 서비스 기동 후 각 서비스로 접근이 가능한지 확인
-http GET localhost:8083/payment와 동일하게 http GET localhost:8088/payment 포트번호 바꿔서 호출 시 정상처리되면 Gatway 정상!
+- Gateway 서비스 기동 후, Gateway를 통해 각각의 마이크로서비스로 접근이 가능한지 확인 
 
 ```
+(gateway) application.yml 
+
+~ 
 server:
   port: 8088
 
@@ -972,11 +834,7 @@ spring:
         - id: class
           uri: http://localhost:8081
           predicates:
-            - Path=/classes/** 
-        - id: course
-          uri: http://localhost:8082
-          predicates:
-            - Path=/courses/** 
+            - Path=/classes/**  
         - id: payment
           uri: http://localhost:8083
           predicates:
@@ -1000,8 +858,45 @@ spring:
               - "*"
             allowCredentials: true
 
+---
+
+spring:
+  profiles: docker
+  cloud:
+    gateway:
+      routes:
+        - id: class
+          uri: http://class:8080
+          predicates:
+            - Path=/classes/**  
+        - id: payment
+          uri: http://payment:8080
+          predicates:
+            - Path=/payments/** 
+        - id: delivery
+          uri: http://delivery:8080
+          predicates:
+            - Path=/deliveries/** 
+        - id: mypage
+          uri: http://mypage:8080
+          predicates:
+            - Path= /mypages/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+server:
+  port: 8080
 ```
-![image](https://user-images.githubusercontent.com/88864740/133534482-9520bba1-c659-409a-88b1-a7e6dc132b57.png)
+
+![gateway](https://user-images.githubusercontent.com/88864399/135489918-45c74b73-7c39-429e-9443-cb7b7155ef45.png)
 
 
 # 운영
