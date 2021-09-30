@@ -121,9 +121,10 @@
 ![ActorCommand추가](https://user-images.githubusercontent.com/88864399/135450059-28f34727-9737-4bf3-98ab-1dea01b430a1.png)
 
 
-### Aggregate으로 묶기
-![Aggregate](https://user-images.githubusercontent.com/49930207/131058844-53e7785f-1dd2-49e0-9bd4-1ad30af43527.png)
- 
+### Aggregate으로 묶기 
+![aggregate](https://user-images.githubusercontent.com/88864399/135451225-a2d4bf02-475a-4697-91e3-5803e25f6d40.png)
+
+
 ### Bounded Context로 묶기
 ![bindcontext](https://user-images.githubusercontent.com/88864399/135450568-b8c20816-c32a-455f-8f7d-ec60213e7c0b.png)
 
