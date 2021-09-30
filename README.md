@@ -233,26 +233,175 @@ replicaset.apps/payment-5f87c76694   1         1         1       4h27m
  ![eks](https://user-images.githubusercontent.com/88864399/135464299-f07862ea-0e78-4b38-bbc8-bcc62d57bca8.png)
 
 
-### 적용 후 REST API 의 테스트
+### 적용 후 REST API 테스트
 
 ```
 //수강 신청 :: 등록 
 http POST http://a6ee5f8662eb24e6a959e1de66f329e3-532480599.ap-northeast-2.elb.amazonaws.com/classes studentName="학생2" classId="2" addr="SEOUL NAMGU" telephoneInfo="010-1234-2345" payMethod="CARD" payAccount="1234-2334-4556-7890" applyStatus="ApplyRequest"
 
-http POST http://localhost:8081/classes studentName="학생2" classId="2" addr="SEOUL NAMGU" telephoneInfo="010-1234-2345" payMethod="BANK" payAccount="1234-2334-4556-7890" applyStatus="ApplyRequest"
-  
+http POST http://localhost:8081/classes studentName="학생2" classId="2" addr="SEOUL NAMGU" telephoneInfo="010-1234-2345" payMethod="CARD" payAccount="1234-2334-4556-7890" applyStatus="ApplyRequest"
+```
+HTTP/1.1 201 
+Content-Type: application/json;charset=UTF-8
+Date: Thu, 30 Sep 2021 13:53:32 GMT
+Location: http://localhost:8081/classes/1
+Transfer-Encoding: chunked
+
+{
+    "_links": {
+        "class": {
+            "href": "http://localhost:8081/classes/1"
+        },
+        "self": {
+            "href": "http://localhost:8081/classes/1"
+        }
+    },
+    "addr": "SEOUL NAMGU",
+    "applyStatus": "CLASS_COMPLETED",
+    "courseId": null,
+    "payAccount": "1234-2334-4556-7890",
+    "payMethod": "BANK",
+    "studentName": "학생2",
+    "telephoneInfo": "010-1234-2345"
+}
+```
 
 //수강 등록 확인
+
 http GET http://localhost:8081/classes
+```
+HTTP/1.1 200 
+Content-Type: application/hal+json;charset=UTF-8
+Date: Thu, 30 Sep 2021 14:09:55 GMT
+Transfer-Encoding: chunked
+
+{
+    "_embedded": {
+        "classes": [
+            {
+                "_links": {
+                    "class": {
+                        "href": "http://localhost:8081/classes/1"
+                    },
+                    "self": {
+                        "href": "http://localhost:8081/classes/1"
+                    }
+                },
+                "addr": "SEOUL NAMGU",
+                "applyStatus": "ApplyRequest",
+                "courseId": null,
+                "payAccount": "1234-2334-4556-7890",
+                "payMethod": "BANK",
+                "studentName": "학생2",
+                "telephoneInfo": "010-1234-2345"
+            },
+            {
+                "_links": {
+                    "class": {
+                        "href": "http://localhost:8081/classes/2"
+                    },
+                    "self": {
+                        "href": "http://localhost:8081/classes/2"
+                    }
+                },
+                "addr": "SEOUL NAMGU",
+                "applyStatus": "ApplyRequest",
+                "courseId": null,
+                "payAccount": "1234-2334-4556-7890",
+                "payMethod": "CARD",
+                "studentName": "학생2",
+                "telephoneInfo": "010-1234-2345"
+            }
+        ]
+    },
+    "_links": {
+        "profile": {
+            "href": "http://localhost:8081/profile/classes"
+        },
+        "search": {
+            "href": "http://localhost:8081/classes/search"
+        },
+        "self": {
+            "href": "http://localhost:8081/classes{?page,size,sort}",
+            "templated": true
+        }
+    },
+    "page": {
+        "number": 0,
+        "size": 20,
+        "totalElements": 2,
+        "totalPages": 1
+    }
+}
+```
 
 //결제 확인
 http GET http://localhost:8083/payments
+```
+HTTP/1.1 200 
+Content-Type: application/hal+json;charset=UTF-8
+Date: Thu, 30 Sep 2021 14:11:08 GMT
+Transfer-Encoding: chunked
 
-//배송 시작 확인
-http GET http://localhost:8084/deliveries
-
-//My page 확인
-http GET http://localhost:8084/deliveries/mypages
+{
+    "_embedded": {
+        "payments": [
+            {
+                "_links": {
+                    "payment": {
+                        "href": "http://localhost:8083/payments/1"
+                    },
+                    "self": {
+                        "href": "http://localhost:8083/payments/1"
+                    }
+                },
+                "addr": "SEOUL NAMGU",
+                "applyId": "1",
+                "payAccount": "1234-2334-4556-7890",
+                "payMethod": "BANK",
+                "payStaus": "PAYMENT_COMPLETED",
+                "studentName": "학생2",
+                "telephoneInfo": "010-1234-2345"
+            },
+            {
+                "_links": {
+                    "payment": {
+                        "href": "http://localhost:8083/payments/2"
+                    },
+                    "self": {
+                        "href": "http://localhost:8083/payments/2"
+                    }
+                },
+                "addr": "SEOUL NAMGU",
+                "applyId": "2",
+                "payAccount": "1234-2334-4556-7890",
+                "payMethod": "CARD",
+                "payStaus": "PAYMENT_COMPLETED",
+                "studentName": "학생2",
+                "telephoneInfo": "010-1234-2345"
+            }
+        ]
+    },
+    "_links": {
+        "profile": {
+            "href": "http://localhost:8083/profile/payments"
+        },
+        "search": {
+            "href": "http://localhost:8083/payments/search"
+        },
+        "self": {
+            "href": "http://localhost:8083/payments{?page,size,sort}",
+            "templated": true
+        }
+    },
+    "page": {
+        "number": 0,
+        "size": 20,
+        "totalElements": 2,
+        "totalPages": 1
+    }
+}
+```
 
 //수강 취소
 http PATCH http://localhost:8081/classes/1 applyStatus=“CLASS_CANCELED”
