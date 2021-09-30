@@ -229,8 +229,9 @@ replicaset.apps/gateway-86d945d69    1         1         1       6m48s
 replicaset.apps/mypage-84d8c6f477    1         1         1       4h39m
 replicaset.apps/payment-5f87c76694   1         1         1       4h27m
 ```
+ 
+ ![eks](https://user-images.githubusercontent.com/88864399/135464299-f07862ea-0e78-4b38-bbc8-bcc62d57bca8.png)
 
-![클라우드EKS](https://user-images.githubusercontent.com/88864740/133535542-40d69962-f66a-4650-837e-91720ea45075.png)
 
 ## DDD 의 적용
 
