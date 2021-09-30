@@ -1050,6 +1050,18 @@ NAME                                        REFERENCE          TARGETS   MINPODS
 horizontalpodautoscaler.autoscaling/class   Deployment/class   1%/30%    1         10        1          36m
 ```
 
+- 등록된 건 수
+```
+            "templated": true
+        }
+    },
+    "page": {
+        "number": 0,
+        "size": 20,
+        "totalElements": 145870,
+        "totalPages": 7294
+    }
+```
 - siege 수행 결과 모두 수행되는 안타까운 모습을 보이고 있다.
 ![hpa_부하](https://user-images.githubusercontent.com/88864399/135501645-032abf1d-6d29-43c5-afe2-f74cda94c465.png)
 
