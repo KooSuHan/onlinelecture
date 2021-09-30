@@ -408,24 +408,156 @@ Transfer-Encoding: chunked
 }
 ```
 
-//수강 취소
-http PATCH http://localhost:8081/classes/1 applyStatus=“CLASS_CANCELED”
+- 취소
 
-//수강 취소 확인
-http GET http://localhost:8081/classes/1
-
-//결제 취소 확인 (상태값 "CANCEL" 확인)
-http GET http://localhost:8083/payments
-
-//배송 취소 확인 (상태값 "DELIVERY_CANCEL" 확인)
-http GET http://localhost:8084/deliveries
-
-//My page 확인
-http GET http://localhost:8085/mypages
+1. 수강 취소
 
 ```
+http PATCH http://localhost:8081/classes/1 applyStatus=“CLASS_CANCELED”
+HTTP/1.1 200 
+Content-Type: application/json;charset=UTF-8
+Date: Thu, 30 Sep 2021 14:23:33 GMT
+Transfer-Encoding: chunked
 
+{
+    "_links": {
+        "class": {
+            "href": "http://localhost:8081/classes/1"
+        },
+        "self": {
+            "href": "http://localhost:8081/classes/1"
+        }
+    },
+    "addr": "SEOUL NAMGU",
+    "applyStatus": "“CLASS_CANCELED”",
+    "courseId": null,
+    "payAccount": "1234-2334-4556-7890",
+    "payMethod": "BANK",
+    "studentName": "학생2",
+    "telephoneInfo": "010-1234-2345"
+}
+```
 
+2 수강 취소내역 확인
+```
+http GET http://localhost:8081/classes/1
+HTTP/1.1 200 
+Content-Type: application/hal+json;charset=UTF-8
+Date: Thu, 30 Sep 2021 14:24:26 GMT
+Transfer-Encoding: chunked
+
+{
+    "_links": {
+        "class": {
+            "href": "http://localhost:8081/classes/1"
+        },
+        "self": {
+            "href": "http://localhost:8081/classes/1"
+        }
+    },
+    "addr": "SEOUL NAMGU",
+    "applyStatus": "“CLASS_CANCELED”",
+    "courseId": null,
+    "payAccount": "1234-2334-4556-7890",
+    "payMethod": "BANK",
+    "studentName": "학생2",
+    "telephoneInfo": "010-1234-2345"
+}
+```
+
+2. 결제 취소 확인 (상태값이 "PaymentCancelled" 로 변경됨을 확인할 수 있음)
+```
+http GET http://localhost:8083/payments/1
+HTTP/1.1 200 
+Content-Type: application/hal+json;charset=UTF-8
+Date: Thu, 30 Sep 2021 14:25:03 GMT
+Transfer-Encoding: chunked
+
+{
+    "_links": {
+        "payment": {
+            "href": "http://localhost:8083/payments/1"
+        },
+        "self": {
+            "href": "http://localhost:8083/payments/1"
+        }
+    },
+    "addr": "SEOUL NAMGU",
+    "applyId": "1",
+    "payAccount": "1234-2334-4556-7890",
+    "payMethod": "BANK",
+    "payStaus": "PaymentCancelled",
+    "studentName": "학생2",
+    "telephoneInfo": "010-1234-2345"
+}
+``` 
+
+//My page 최종적으로 변경되는 데이터 확인 
+```
+http GET http://localhost:8085/mypages
+HTTP/1.1 200 
+Content-Type: application/hal+json;charset=UTF-8
+Date: Thu, 30 Sep 2021 14:26:53 GMT
+Transfer-Encoding: chunked
+
+{
+    "_embedded": {
+        "mypages": [
+            {
+                "_links": {
+                    "mypage": {
+                        "href": "http://localhost:8085/mypages/1"
+                    },
+                    "self": {
+                        "href": "http://localhost:8085/mypages/1"
+                    }
+                },
+                "addr": "SEOUL NAMGU",
+                "applyId": "1",
+                "applyStaus": "ApplyCanceled",
+                "courseId": "null",
+                "deliveryStatus": "DeliveryCanceled",
+                "payAccount": "1234-2334-4556-7890",
+                "payMethod": "BANK",
+                "payStatus": "PayCanceled",
+                "studentName": "학생2",
+                "telephoneInfo": "010-1234-2345"
+            },
+            {
+                "_links": {
+                    "mypage": {
+                        "href": "http://localhost:8085/mypages/2"
+                    },
+                    "self": {
+                        "href": "http://localhost:8085/mypages/2"
+                    }
+                },
+                "addr": "SEOUL NAMGU",
+                "applyId": "2",
+                "applyStaus": "ApplyFinish",
+                "courseId": "null",
+                "deliveryStatus": "DeliveryFinish",
+                "payAccount": "1234-2334-4556-7890",
+                "payMethod": "CARD",
+                "payStatus": "PayFinish",
+                "studentName": "학생2",
+                "telephoneInfo": "010-1234-2345"
+            }
+        ]
+    },
+    "_links": {
+        "profile": {
+            "href": "http://localhost:8085/profile/mypages"
+        },
+        "search": {
+            "href": "http://localhost:8085/mypages/search"
+        },
+        "self": {
+            "href": "http://localhost:8085/mypages"
+        }
+    }
+}
+```
 
 
 ## 폴리글랏 퍼시스턴스
