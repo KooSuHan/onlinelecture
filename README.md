@@ -695,69 +695,102 @@ MyPageViewHandler.java
     }
 ```
 
-## 동기식 호출 과 Fallback 처리
+## Req/Resp 동기식 호출 과 Fallback 처리
 
-분석단계에서의 조건 중 하나로 강의신청(class)->결제(payment) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
-
-- 결제서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
+Req/Resp 처리를 위해 결제가 처리되지 않는 수강신청은 불가하도록, 양 쪽의 처리에 일관성을 유지할 수 있도록 트랜잭션으로 처리하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
 
 
 ```
 # (class) PaymentService.java
 
-package classnew.external;
-
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.stereotype.Component;
-
-import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixCommandGroupKey;
-import com.netflix.hystrix.HystrixCommandKey;
-import com.netflix.hystrix.HystrixCommandProperties;
-
+~~
+ 
 import feign.Feign;
 import feign.hystrix.HystrixFeign;
 import feign.hystrix.SetterFactory;
 
-@FeignClient(name="payment", url="http://localhost:8083", configuration=PaymentService.PaymentServiceConfiguration.class, fallback=PaymentServiceFallback.class)
+@FeignClient(name="payment", url="${feign.client.url.paymentUrl}" )
 public interface PaymentService {
+    
     @RequestMapping(method= RequestMethod.POST, path="/payments", consumes = "application/json") //payments로 해야 데이터insert
     public boolean payApprove(@RequestBody Payment payment);
+    
+    @Component
+    class PaymentServiceFallback implements PaymentService {
+        @Override
+        public Long payCellPhone(Long orderId,Integer paymentAmt,Long cellphoneId){
+            System.out.println("\n###PaymentServiceFallback works####\n");   // fallback 메소드 작동 테스트
+            return 0L;
+        }
+    }
+    
+    @Component
+    class PaymentServiceConfiguration {
+        Feign.Builder feignBuilder(){
+            SetterFactory setterFactory = (target, method) -> HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(target.name()))
+                    .andCommandKey(HystrixCommandKey.Factory.asKey(Feign.configKey(target.type(), method)))
+                    // 위는 groupKey와 commandKey 설정
+                    // 아래는 properties 설정
+                    .andCommandPropertiesDefaults(HystrixCommandProperties.defaultSetter()
+                            .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
+                            .withMetricsRollingStatisticalWindowInMilliseconds(10000) // 기준시간
+                            .withCircuitBreakerSleepWindowInMilliseconds(3000) // 서킷 열려있는 시간
+                            .withCircuitBreakerErrorThresholdPercentage(50)) // 에러 비율 기준 퍼센트
+                    ; // 최소 호출 횟수
+            return HystrixFeign.builder().setterFactory(setterFactory);
+        }
+    }
+}
 ```
 
-- class와 payment서비스가 올라가있는 상황에서 POST 정상
+- class와 payment서비스가 올라가있는 상황에서 정상적으로 등록됨을 확인할 수 있음. 
+ 
+![동기호출1_등록_class](https://user-images.githubusercontent.com/88864399/135483347-68ed79b4-3921-41bd-88aa-002786349713.png)
 
-![class_post](https://user-images.githubusercontent.com/88864740/133542301-fc65b0f6-9328-4541-a506-828dd2514dca.png)
+![동기호출-정상처리](https://user-images.githubusercontent.com/88864399/135483469-2ed6d873-b76b-4d1b-825e-fd23649b346c.png)
 
-![payment_post](https://user-images.githubusercontent.com/88864740/133542402-9c2d2e28-65fb-47dc-8679-fe643c2219f2.png)
-
-
-- 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, Payment가 장애가 나면 Class도 동작하지 못함을 확인
-
-![class-payment동기1](https://user-images.githubusercontent.com/88864740/133542529-88985589-6adc-4b49-8ba4-94bc9d3c0372.png)
-
-![class-payment동기2](https://user-images.githubusercontent.com/88864740/133542565-354638d1-e33d-4e1f-bf38-d5c474e64579.png)
+ 
+- 동기식 호출에서는 Payment가 장애가 발생할 경우, Class도 fallback 처리를 하지 못하여 정상적으로 동작하지 못함을 확인(에러 메시지 확인) 
+ 
+![동기호출-정상처리](https://user-images.githubusercontent.com/88864399/135486073-d080f902-ae2e-4189-a0fe-2f4279d0a472.png)
+ 
+![동기호출1_등록_class](https://user-images.githubusercontent.com/88864399/135486083-bba419dd-bd5a-4fc8-8e42-f93a5aa68381.png)
 
 
 - FallBack 처리
 
--1.Class-Payment의 Request/Response 구조에 Spring Hystrix를 사용하여 FallBack 기능 구현
+1. Req/Resp 구조의 Class와 Payment 간에 Fallback 처리를 위해 Hystrix를 사용하여 기능을 구현한다. 
 
--2.[order > src > main > java > Class > external > PaymentService.java]에 configuration, fallback 옵션 추가
-
--3.configuration 클래스 및 fallback 클래스 추가
-
-[class > src > main > resources > application.yml]에 hystrix
+2. Class 서비스 내 external 쪽에 PaymentService.java 을 생성하여 fallback 처리를 할 수 있도록 구현한다. 
+ 
 
 ```
+
+# (class) PaymentService.java
+
+~~
+ 
+import feign.Feign;
+import feign.hystrix.HystrixFeign;
+import feign.hystrix.SetterFactory;
+
+@FeignClient(name="payment", url="${feign.client.url.paymentUrl}" )
+public interface PaymentService {
+    
+    @RequestMapping(method= RequestMethod.POST, path="/payments", consumes = "application/json") //payments로 해야 데이터insert
+    public boolean payApprove(@RequestBody Payment payment);
+    
+    @Component
+    class PaymentServiceFallback implements PaymentService {
+        @Override
+        public Long payCellPhone(Long orderId,Integer paymentAmt,Long cellphoneId){
+            System.out.println("\n###PaymentServiceFallback works####\n");   // fallback 메소드 작동 테스트
+            return 0L;
+        }
+    }
+    
 # (class) PaymentServiceFallback.java
 
-package classnew.external;
 
 import org.springframework.stereotype.Component;
 
@@ -774,9 +807,7 @@ public class PaymentServiceFallback implements PaymentService {
 ```
 
 -FallBack처리를하면, Payment장애라도 Class기동 중이면 정상처리됨 
-
-![image](https://user-images.githubusercontent.com/88864740/133537916-3b485d5d-10c5-4792-ad99-8e4e2bb7a4e7.png)
-
+ 
 
 
 
