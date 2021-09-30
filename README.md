@@ -118,10 +118,17 @@
 ![이벤트 도출](https://user-images.githubusercontent.com/49930207/131055626-88773fdf-77a1-4ac7-a25e-9b200fa565b1.png)
 
 ### Actor, Command 추가
-![Actor, Command](https://user-images.githubusercontent.com/49930207/131058387-035d27bd-c2ff-4c08-a04a-60d361920ef6.png)
+![ActorCommand추가](https://user-images.githubusercontent.com/88864399/135450059-28f34727-9737-4bf3-98ab-1dea01b430a1.png)
+
 
 ### Aggregate으로 묶기
 ![Aggregate](https://user-images.githubusercontent.com/49930207/131058844-53e7785f-1dd2-49e0-9bd4-1ad30af43527.png)
+ 
+### Bounded Context로 묶기
+
+
+### Policy의 이동과 Context 매핑 (점선은 Pub/Sub, 실선은 Req/Resp)
+
  
 ### 기능적/비기능적 요구사항을 만족하는지 검증
 
@@ -162,10 +169,10 @@
 
   - MsaEz의 Hexagonal 기능을 활용하여 헥사고날 다이어그램을 추출함. 
 
-## 헥사고날 아키텍처 다이어그램 도출2
-![헥사고날 아키텍쳐 이미지](https://user-images.githubusercontent.com/88864399/133424672-e33313cf-0260-411d-a8f8-1149cb691d22.png)
+## 헥사고날 아키텍처 다이어그램 도출2 
+ 
+ ![헥사고날아키텍처2](https://user-images.githubusercontent.com/88864399/135450215-4bc0c342-ca80-4512-a1b6-f86a67ce19ef.png)
 
-  
   - MsaEz를 통해 추출한 헥사고날 다이어그램을 통해 다음과 같이 작성
   - 호출관계에서 PubSub 과 Req/Resp 를 구분하여 작성
   - Sub 도메인과 Bounded Context를 분리하여 작성 
