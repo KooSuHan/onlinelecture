@@ -233,144 +233,14 @@ replicaset.apps/payment-5f87c76694   1         1         1       4h27m
  ![eks](https://user-images.githubusercontent.com/88864399/135464299-f07862ea-0e78-4b38-bbc8-bcc62d57bca8.png)
 
 
-## DDD 의 적용
-
-- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: 
- (예시는 payment 마이크로 서비스). 이때 가능한 중학교 수준의 영어를 사용하려고 노력했다. 
+### 적용 후 REST API 의 테스트
 
 ```
-package team;
+//수강 신청 :: 등록 
+http POST http://a6ee5f8662eb24e6a959e1de66f329e3-532480599.ap-northeast-2.elb.amazonaws.com/classes studentName="학생2" classId="2" addr="SEOUL NAMGU" telephoneInfo="010-1234-2345" payMethod="CARD" payAccount="1234-2334-4556-7890" applyStatus="ApplyRequest"
 
-import javax.persistence.*;
-import org.springframework.beans.BeanUtils;
-
-@Entity
-@Table(name = "Payment_table")
-public class Payment {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-    private String applyId;
-    private String payMethod;
-    private String payAccount;
-    private String payStaus;
-    private String addr;
-    private String telephoneInfo;
-    private String studentName;
-
-    @PostPersist
-    public void onPostPersist() {
-        PaymentAppoved paymentAppoved = new PaymentAppoved();
-        BeanUtils.copyProperties(this, paymentAppoved);
-        paymentAppoved.setPayStaus("PaymentAprroved");
-        paymentAppoved.publishAfterCommit();
-    }
-
-    @PostUpdate
-    public void onPostUpdate() {
-        PaymentCanceled paymentCanceled = new PaymentCanceled();
-        BeanUtils.copyProperties(this, paymentCanceled);
-        paymentCanceled.publishAfterCommit();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getApplyId() {
-        return applyId;
-    }
-
-    public void setApplyId(String applyId) {
-        this.applyId = applyId;
-    }
-
-    public String getPayMethod() {
-        return payMethod;
-    }
-
-    public void setPayMethod(String payMethod) {
-        this.payMethod = payMethod;
-    }
-
-    public String getPayAccount() {
-        return payAccount;
-    }
-
-    public void setPayAccount(String payAccount) {
-        this.payAccount = payAccount;
-    }
-
-    public String getPayStaus() {
-        return payStaus;
-    }
-
-    public void setPayStaus(String payStaus) {
-        this.payStaus = payStaus;
-    }
-
-    public String getAddr() {
-        return addr;
-    }
-
-    public void setAddr(String addr) {
-        this.addr = addr;
-    }
-
-    public String getTelephoneInfo() {
-        return telephoneInfo;
-    }
-
-    public void setTelephoneInfo(String telephoneInfo) {
-        this.telephoneInfo = telephoneInfo;
-    }
-
-    public String getStudentName() {
-        return studentName;
-    }
-
-    public void setStudentName(String studentName) {
-        this.studentName = studentName;
-    }
-
-}
-
-```
-- Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
-
-```
-package team;
-
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-
-import java.util.List;
-
-public interface PaymentRepository extends PagingAndSortingRepository<Payment, Long> {
-
-    List<Payment> findByApplyId(String applyId);
-}
-```
-
-- 적용 후 REST API 의 테스트
-
-```
-//강의 등록
-http POST localhost:8082/courses id=1 className=English classInfo=Language teacherName=Tom teacherInfo=Male startDate=20210101 endDate=20211231
-
-//강의 등록 확인
-http GET localhost:8082/courses
-
-//강의 삭제
-http DELETE localhost:8082/courses/1
-
-//수강 신청
 http POST http://localhost:8081/classes studentName="학생2" classId="2" addr="SEOUL NAMGU" telephoneInfo="010-1234-2345" payMethod="BANK" payAccount="1234-2334-4556-7890" applyStatus="ApplyRequest"
+  
 
 //수강 등록 확인
 http GET http://localhost:8081/classes
