@@ -774,7 +774,7 @@ import feign.Feign;
 import feign.hystrix.HystrixFeign;
 import feign.hystrix.SetterFactory;
 
-@FeignClient(name="payment", url="${feign.client.url.paymentUrl}" )
+@FeignClient(name="payment", url="${feign.client.url.paymentUrl}", configuration=PaymentService.PaymentServiceConfiguration.class, fallback=PaymentServiceFallback.class)
 public interface PaymentService {
     
     @RequestMapping(method= RequestMethod.POST, path="/payments", consumes = "application/json") //payments로 해야 데이터insert
@@ -807,7 +807,7 @@ public class PaymentServiceFallback implements PaymentService {
 ```
 
 -FallBack처리를하면, Payment장애라도 Class기동 중이면 정상처리됨 
- 
+ ![fallback처리정상](https://user-images.githubusercontent.com/88864399/135487829-c88cf5ff-8dab-416e-9024-8758dba06ada.png)
 
 
 
