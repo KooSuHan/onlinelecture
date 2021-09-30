@@ -140,8 +140,8 @@
 
 
 ### 완료 모델
- 
-![화면 캡처 전체 모양](https://user-images.githubusercontent.com/88864399/135220246-a68a5ee1-7a53-4afc-830b-a2e0d5dfa506.png)
+
+![완료모델](https://user-images.githubusercontent.com/88864399/135446610-719a7500-c88f-4a45-bec3-31978588c758.png)
 
 
 ### 비기능 요구사항에 대한 검증
@@ -158,7 +158,7 @@
 
 ## 헥사고날 아키텍처 다이어그램 도출1
 
-![화면 캡처 MsaEZ로 만든 Hexagonal](https://user-images.githubusercontent.com/88864399/135224234-185535f4-f5d9-4629-8edc-cda10ff52176.png)
+![헥사고날다이어그램1](https://user-images.githubusercontent.com/88864399/135446899-8480f2f7-e83c-44cf-a939-ac1ecca8b4eb.png)
 
   - MsaEz의 Hexagonal 기능을 활용하여 헥사고날 다이어그램을 추출함. 
 
