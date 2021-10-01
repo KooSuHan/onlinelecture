@@ -1273,4 +1273,113 @@ Shortest transaction:           0.00
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
 
 
+### PersistentVolumeClaim 
+
+- PersistentVolumeClaim 생성
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aws-efs
+spec: 
+  accessModes: 
+  - ReadWriteMany 
+  resources:
+    requests:
+      storage: 1Mi
+  storageClassName: aws-efs
+
+root@labs-389288629:/home/project/project/configmap# kubectl apply -f volume-pvc.yaml
+persistentvolumeclaim/aws-efs created
+```
+
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: delivery
+  namespace: user02
+spec: 
+  containers:
+  - name: delivery
+    image: nginix:1.15.5
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    volumeMounts:
+    - mountPath: "/mnt/aws"
+      name: volume
+  volumes:
+    - name: volume
+      persistentVolumeClaim:
+        claimName: aws-efs
+	
+root@labs-389288629:/home/project/project/configmap# kubectl apply -f pod-with-pvc.yaml
+pod/mypod created
+```
+
+```
+root@labs-389288629:/home/project/project/configmap# kubectl describe pod mypod
+Name:         mypod
+Namespace:    default
+Priority:     0
+Node:         <none>
+Labels:       <none>
+Annotations:  kubectl.kubernetes.io/last-applied-configuration:
+                {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"name":"mypod","namespace":"default"},"spec":{"containers":[{"image":"nginix:...
+              kubernetes.io/psp: eks.privileged
+Status:       Pending
+IP:           
+IPs:          <none>
+Containers:
+  mypod:
+    Image:      nginix:1.15.5
+    Port:       <none>
+    Host Port:  <none>
+    Limits:
+      cpu:     250m
+      memory:  256Mi
+    Requests:
+      cpu:        100m
+      memory:     128Mi
+    Environment:  <none>
+    Mounts:
+      /mnt/aws from volume (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-869t9 (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False 
+Volumes:
+  volume:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  aws-efs
+    ReadOnly:   false
+  default-token-869t9:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-869t9
+    Optional:    false
+QoS Class:       Burstable
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type     Reason            Age                From               Message
+  ----     ------            ----               ----               -------
+  Warning  FailedScheduling  35s (x2 over 35s)  default-scheduler  0/4 nodes are available: 4 pod has unbound immediate PersistentVolumeClaims.
+```
+  
+root@labs-389288629:/home/project/project/configmap# kubectl get pod -n user02
+NAME                        READY   STATUS             RESTARTS   AGE
+class-6796576b88-sht9h      1/1     Running            0          8h
+delivery-8494cc7c96-qqgbd   0/1     CrashLoopBackOff   128        11h
+gateway-86d945d69-zvbcp     1/1     Running            0          11h
+mypage-5f77cf97cb-bbq66     1/1     Running            0          10h
+payment                     0/1     Pending            0          32m
+payment-5f87c76694-2kh8s    1/1     Running            0          15h
+
 
