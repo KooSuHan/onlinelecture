@@ -1085,7 +1085,7 @@ siege -c30 –t10S   --content-type "application/json" 'http://localhost:8081/cl
 
 - seige 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
-siege -c200 –t120S  -v -r --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}'
+siege -50 –t30S  -v -r --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}' 
 
 ** SIEGE 4.0.5
 ** Preparing 100 concurrent users for battle.
@@ -1104,13 +1104,7 @@ HTTP/1.1 201     0.13 secs:     251 bytes ==> POST http://localhost:8081/classes
 HTTP/1.1 201     1.41 secs:     251 bytes ==> POST http://localhost:8081/classes
 HTTP/1.1 201     1.31 secs:     251 bytes ==> POST http://localhost:8081/classes
 
-```
-
-- 새버전(v1.0)으로의 배포 시작
-```
-kubectl apply -f kubectl apply -f deployment_v1.0.yml
-
-```
+``` 
 
 - seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
 ```
@@ -1129,40 +1123,25 @@ Shortest transaction:           0.00
 ```
 - 배포 중 Availability 가 평소 100%에서 35% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함:
 
-```
-# deployment.yaml 의 readiness probe 의 설정:
-
-# (class) deployment.yaml 파일
-           readinessProbe:
-            httpGet:
-              path: '/classes'
-              port: 8080
-            initialDelaySeconds: 20
-            timeoutSeconds: 2
-            periodSeconds: 5
-            failureThreshold: 10
-
-
-/> kubectl apply -f deployment.yml
+``` 
+# (class) buildspec.yml 파일 내 readiness probe 설정을 다시 돌려 놓음 
+ 
+                    readinessProbe:
+                      httpGet:
+                        path: '/classes'
+                        port: 8080
+                      initialDelaySeconds: 20
+                      timeoutSeconds: 2
+                      periodSeconds: 5
+                      failureThreshold: 10
+ 
 ```
 
-- 동일한 시나리오로 재배포 한 후 Availability 확인:
-```
-Lifting the server siege...
-Transactions:                  39737 hits
-Availability:                 100.00 %
-Elapsed time:                 119.91 secs
-Data transferred:               9.66 MB
-Response time:                  0.30 secs
-Transaction rate:             331.39 trans/sec
-Throughput:                     0.08 MB/sec
-Concurrency:                   99.71
-Successful transactions:       39737
-Failed transactions:               0
-Longest transaction:            1.89
-Shortest transaction:           0.00
+- 동일한 시나리오로 재배포 한 후 Availability 확인: 
 
-```
+![readiness](https://user-images.githubusercontent.com/88864399/135563231-dba238eb-2092-45bb-9a7a-9d59eff26fbe.png)
+
+
 
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
 
@@ -1233,4 +1212,6 @@ aws-efs   Pending                                      aws-efs        2m49s
 
 ## Circuitbreak 
  
-
+특정 서비스(Class)에 과도한 요청으로 지연이 발생하는 경우 CircuitBreake 통해 장애격리를 구현하고자 함. 
+Spring FeignClient + Hystrix 사용하여 Circuitbreak 를 구현하고자 하였으나, 구현의 어려움이 있어 중단함. 
+ 
