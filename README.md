@@ -1293,7 +1293,7 @@ root@labs-389288629:/home/project/project/configmap# kubectl apply -f volume-pvc
 persistentvolumeclaim/aws-efs created
 ```
 
-- PersistentVolumeClaim을 가진 Pod를 생성 하기 
+- PersistentVolumeClaim을 가진 Pod 생성 하기 
 ```
 apiVersion: v1
 kind: Pod
