@@ -596,7 +596,7 @@ Spring Cloud JPA를 사용하여 개발하였기 때문에 소스의 변경 부�
 
 ## CQRS
 
- - Class, Payment, Delivery 등을 통해 생성된 수강신청, 결제, 배송 정보를 별도의 서비스를 통해 조회할 수 있도록 하여 CQRS로 구현함  
+ - Class, Payment, Delivery 등을 통해 생성된 수강신청, 결제, 배송 정보를 별도의 서비스를 통해 조회(Mypage)할 수 있도록 하여 CQRS로 구현함  
  - 비동기식으로 Kafka를 통해 이벤트를 별도로 수신하여 처리될 수 있도록 관리한다
 
 
