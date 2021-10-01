@@ -125,8 +125,8 @@
 ![aggregate](https://user-images.githubusercontent.com/88864399/135451225-a2d4bf02-475a-4697-91e3-5803e25f6d40.png)
 
 
-### Bounded Context로 묶기
-![bindcontext](https://user-images.githubusercontent.com/88864399/135450568-b8c20816-c32a-455f-8f7d-ec60213e7c0b.png)
+### Bounded Context로 묶기 
+![contextbind](https://user-images.githubusercontent.com/88864399/135565258-fcdfcedd-9a66-441e-aa01-0bcbb85d7c9c.png)
 
 
 ### Policy의 이동과 Context 매핑 (점선은 Pub/Sub, 실선은 Req/Resp)
