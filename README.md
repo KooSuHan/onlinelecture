@@ -1083,7 +1083,7 @@ siege -c30 –t10S   --content-type "application/json" 'http://localhost:8081/cl
 
 * 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 CB 설정을 제거함
 
-- seige 로 배포작업 직전에 워크로드를 모니터링 함.
+- siege 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
 siege -c50 –t30S  -v -r --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}' 
 
@@ -1106,7 +1106,7 @@ HTTP/1.1 201     1.31 secs:     251 bytes ==> POST http://localhost:8081/classes
 
 ``` 
 
-- seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
+- siege 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
 ```
 Transactions:                    614 hits
 Availability:                  35.35 %
