@@ -1032,14 +1032,15 @@ kubectl autoscale deploy class --min=1 --max=10 --cpu-percent=10
 ```
 
 - siege를 통해 부하를 넣어준다. (siege.yaml파일을 만들어 작업 :kubectl apply -f siege.yaml)   
- 
- 
+```
+siege -c30 –t10S   --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}' 
+```
 
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어 replica 가 증가함을 확인한다. 
 
-![hpa_최종_3개](https://user-images.githubusercontent.com/88864399/135560567-02cb8992-48de-4b5d-b845-175755ebd06b.png)
-
-
+![hpa최종부하](https://user-images.githubusercontent.com/88864399/135562410-ffcdbec2-6940-40d1-b1ef-56478956575f.png)
+ 
+ 
 ## Liveness Probe(Self-healing)
 
 - buildspec.yaml파일에 Liveness Probe 가 동작 할 수 있도록 한다. 
