@@ -1032,9 +1032,8 @@ kubectl autoscale deploy class --min=1 --max=10 --cpu-percent=10
 ```
 
 - siege를 통해 부하를 넣어준다. (siege.yaml파일을 만들어 작업 :kubectl apply -f siege.yaml)   
-
-![hpa_부하넣기](https://user-images.githubusercontent.com/88864399/135560458-5d476b4d-a504-468c-9b77-7925e1810b03.png)
-
+ 
+ 
 
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어 replica 가 증가함을 확인한다. 
 
@@ -1167,87 +1166,6 @@ Shortest transaction:           0.00
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
 
 
-
-## 동기식 호출 / 서킷 브레이킹 / 장애격리
-
-* 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
-
-Class > Payment로 강의신청시 RESTful Request/Response 로 연동하여 구현이 되어있고, 과도할 경우 CB 를 통하여 장애격리.
-
-- Hystrix 를 설정:  요청처리 쓰레드에서 처리시간이 1000 밀리가 넘어서기 시작하여 어느정도 유지되면 CB 회로가 닫히도록 (요청을 빠르게 실패처리, 차단) 설정
-```
-# application.yml
-
-feign:
-  hystrix:
-    enabled: true
-hystrix:
-  command:
-    default:
-      execution.isolation.thread.timeoutInMilliseconds: 1000
-```
-
-* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-- 동시사용자 50명
-- 60초 동안 실시
-
-```
-
-root@siege:/# siege -c50 -t60S -r10 -v --content-type "application/json" 'http://localhost:8081/classes PATCH {"courseId":2}'
-
-[error] CONFIG conflict: selected time and repetition based testing
-defaulting to time-based testing: 60 seconds
-** SIEGE 4.0.4
-** Preparing 50 concurrent users for battle.
-The server is now under siege...
-
-HTTP/1.1 200     6.09 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.49 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     6.28 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.40 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.58 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-
-
-C/B 발생
-
-
-HTTP/1.1 500     7.07 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500     3.04 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500     1.02 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500     1.03 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500    30.01 secs:     179 bytes ==> PATCH http://localhost:8081/classes/1
-
-C/B 해제됨
-
-
-HTTP/1.1 200    18.05 secs:     328 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.10 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.22 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500     4.10 secs:     239 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.40 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.70 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-
-...
-
-Transactions:                   1023 hits
-Availability:                  49.28 %
-Elapsed time:                   8.55 secs
-Data transferred:               0.56 MB
-Response time:                  0.40 secs
-Transaction rate:             119.65 trans/sec
-Throughput:                     0.07 MB/sec
-Concurrency:                   48.30
-Successful transactions:        1023
-Failed transactions:            1053
-Longest transaction:            0.84
-Shortest transaction:           0.01
-
-```
-- 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌. 하지만, 49% 가 성공하였고, 51%가 실패했다는 것은 고객 사용성에 있어 좋지 않기 때문에 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
-
-
-
-
 ## PersistentVolumeClaim 
 
 - PersistentVolumeClaim 생성
@@ -1311,3 +1229,7 @@ aws-efs   Pending                                      aws-efs        2m49s
 
 
  
+
+## Circuitbreak 
+ 
+
