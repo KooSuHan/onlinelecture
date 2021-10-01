@@ -1025,47 +1025,21 @@ phases:
 각 마이크로서비스에 부하가 들어올 경우, 동적으로 replica를 확장하여, 각 서비스가 문제 없이 구동될 수 있도록 기능을 적용하고자 함.   
 
 
-- class 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. CPU 사용량이 30%를 넘으면 replica 를 최대 10개까지 늘릴 수 있도록 설정해준다. 
+- class 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. CPU 사용량이 10%를 넘으면 replica 를 최대 10개까지 늘릴 수 있도록 설정해준다.(초기 50%로 설정을 잡으니 부하를 아무리 넣어도 replica가 증가하지 않는다) 
+
 ```
 kubectl autoscale deploy class --min=1 --max=10 --cpu-percent=30
 ```
-- siege를 통해 동시접속 200, 50초 동안 부하를 걸어준다. 
-```
-siege -c200 -t50S -v --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}'
-```
-- 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
-![watch_HPA](https://user-images.githubusercontent.com/88864399/135501197-151e1eac-3363-4be7-9e64-80f875f49d01.png)
+
+- siege를 통해 부하를 넣어준다. (siege.yaml파일을 만들어 작업 :kubectl apply -f siege.yaml)   
+
+![hpa_부하넣기](https://user-images.githubusercontent.com/88864399/135560458-5d476b4d-a504-468c-9b77-7925e1810b03.png)
 
 
-- 부하를 주었지만, 최대 CPU 3%를 넘기지 못하고 스케일 아웃 되지 못하였음.
-```
-NAME                            READY   STATUS    RESTARTS   AGE
-pod/class-6796576b88-sht9h      1/1     Running   0          70m
-pod/delivery-8494cc7c96-qqgbd   0/1     Error     49         3h59m
-pod/gateway-86d945d69-zvbcp     1/1     Running   0          4h8m
-pod/mypage-5f77cf97cb-bbq66     1/1     Running   0          3h8m
-pod/payment-5f87c76694-2kh8s    1/1     Running   0          8h
+- 오토스케일이 어떻게 되고 있는지 모니터링을 걸어 replica 가 증가함을 확인한다. 
 
-NAME                                        REFERENCE          TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler.autoscaling/class   Deployment/class   1%/30%    1         10        1          36m
-```
+![hpa_최종_3개](https://user-images.githubusercontent.com/88864399/135560567-02cb8992-48de-4b5d-b845-175755ebd06b.png)
 
-- 등록된 건 수
-```
-            "templated": true
-        }
-    },
-    "page": {
-        "number": 0,
-        "size": 20,
-        "totalElements": 145870,
-        "totalPages": 7294
-    }
-```
-- siege 수행 결과 모두 수행되는 안타까운 모습을 보이고 있다.
-![hpa_부하](https://user-images.githubusercontent.com/88864399/135501645-032abf1d-6d29-43c5-afe2-f74cda94c465.png)
-
- 
 
 ## Liveness Probe(Self-healing)
 
@@ -1102,86 +1076,6 @@ horizontalpodautoscaler.autoscaling/class   Deployment/class   1%/30%    1      
 - Port를 변경하여 kubelet이 지속적으로 실행중인 컨테이너의 Socket을 열려고 시도하고 정상이 아니기에 컨테이너를 재시작한다. RESTARTS 값이 올라감을 확인할 수 있다. 
 
 ![livenessProbe](https://user-images.githubusercontent.com/88864399/135493638-6b49ff05-b92c-4df3-9948-b3419bb0e998.png)
-
-
-
-
-## 동기식 호출 / 서킷 브레이킹 / 장애격리
-
-* 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
-
-Class > Payment로 강의신청시 RESTful Request/Response 로 연동하여 구현이 되어있고, 과도할 경우 CB 를 통하여 장애격리.
-
-- Hystrix 를 설정:  요청처리 쓰레드에서 처리시간이 1000 밀리가 넘어서기 시작하여 어느정도 유지되면 CB 회로가 닫히도록 (요청을 빠르게 실패처리, 차단) 설정
-```
-# application.yml
-
-feign:
-  hystrix:
-    enabled: true
-hystrix:
-  command:
-    default:
-      execution.isolation.thread.timeoutInMilliseconds: 1000
-```
-
-* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-- 동시사용자 50명
-- 60초 동안 실시
-
-```
-
-root@siege:/# siege -c50 -t60S -r10 -v --content-type "application/json" 'http://localhost:8081/classes PATCH {"courseId":2}'
-
-[error] CONFIG conflict: selected time and repetition based testing
-defaulting to time-based testing: 60 seconds
-** SIEGE 4.0.4
-** Preparing 50 concurrent users for battle.
-The server is now under siege...
-
-HTTP/1.1 200     6.09 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.49 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     6.28 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.40 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.58 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-
-
-C/B 발생
-
-
-HTTP/1.1 500     7.07 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500     3.04 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500     1.02 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500     1.03 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500    30.01 secs:     179 bytes ==> PATCH http://localhost:8081/classes/1
-
-C/B 해제됨
-
-
-HTTP/1.1 200    18.05 secs:     328 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.10 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.22 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 500     4.10 secs:     239 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.40 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-HTTP/1.1 200     5.70 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
-
-...
-
-Transactions:                   1023 hits
-Availability:                  49.28 %
-Elapsed time:                   8.55 secs
-Data transferred:               0.56 MB
-Response time:                  0.40 secs
-Transaction rate:             119.65 trans/sec
-Throughput:                     0.07 MB/sec
-Concurrency:                   48.30
-Successful transactions:        1023
-Failed transactions:            1053
-Longest transaction:            0.84
-Shortest transaction:           0.01
-
-```
-- 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌. 하지만, 49% 가 성공하였고, 51%가 실패했다는 것은 고객 사용성에 있어 좋지 않기 때문에 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
 
 
 
@@ -1271,6 +1165,87 @@ Shortest transaction:           0.00
 ```
 
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
+
+
+
+## 동기식 호출 / 서킷 브레이킹 / 장애격리
+
+* 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
+
+Class > Payment로 강의신청시 RESTful Request/Response 로 연동하여 구현이 되어있고, 과도할 경우 CB 를 통하여 장애격리.
+
+- Hystrix 를 설정:  요청처리 쓰레드에서 처리시간이 1000 밀리가 넘어서기 시작하여 어느정도 유지되면 CB 회로가 닫히도록 (요청을 빠르게 실패처리, 차단) 설정
+```
+# application.yml
+
+feign:
+  hystrix:
+    enabled: true
+hystrix:
+  command:
+    default:
+      execution.isolation.thread.timeoutInMilliseconds: 1000
+```
+
+* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
+- 동시사용자 50명
+- 60초 동안 실시
+
+```
+
+root@siege:/# siege -c50 -t60S -r10 -v --content-type "application/json" 'http://localhost:8081/classes PATCH {"courseId":2}'
+
+[error] CONFIG conflict: selected time and repetition based testing
+defaulting to time-based testing: 60 seconds
+** SIEGE 4.0.4
+** Preparing 50 concurrent users for battle.
+The server is now under siege...
+
+HTTP/1.1 200     6.09 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 200     5.49 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 200     6.28 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 200     5.40 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 200     5.58 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
+
+
+C/B 발생
+
+
+HTTP/1.1 500     7.07 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 500     3.04 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 500     1.02 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 500     1.03 secs:     208 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 500    30.01 secs:     179 bytes ==> PATCH http://localhost:8081/classes/1
+
+C/B 해제됨
+
+
+HTTP/1.1 200    18.05 secs:     328 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 200     5.10 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 200     5.22 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 500     4.10 secs:     239 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 200     5.40 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
+HTTP/1.1 200     5.70 secs:     326 bytes ==> PATCH http://localhost:8081/classes/1
+
+...
+
+Transactions:                   1023 hits
+Availability:                  49.28 %
+Elapsed time:                   8.55 secs
+Data transferred:               0.56 MB
+Response time:                  0.40 secs
+Transaction rate:             119.65 trans/sec
+Throughput:                     0.07 MB/sec
+Concurrency:                   48.30
+Successful transactions:        1023
+Failed transactions:            1053
+Longest transaction:            0.84
+Shortest transaction:           0.01
+
+```
+- 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌. 하지만, 49% 가 성공하였고, 51%가 실패했다는 것은 고객 사용성에 있어 좋지 않기 때문에 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
+
+
 
 
 ## PersistentVolumeClaim 
