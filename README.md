@@ -697,7 +697,7 @@ MyPageViewHandler.java
 
 ## Req/Resp 동기식 호출 과 Fallback 처리
 
-Req/Resp 처리를 위해 결제가 처리되지 않는 수강신청은 불가하도록, 양 쪽의 처리에 일관성을 유지할 수 있도록 트랜잭션으로 처리하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
+Req/Resp 처리를 위해 결제가 처리가 정상적으로 완료되지 않는 건은 수강신청이 불가하도록, 양 쪽의 처리에 일관성을 유지할 수 있도록 트랜잭션으로 처리하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
 
 
 ```
