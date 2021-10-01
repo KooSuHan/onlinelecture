@@ -1085,7 +1085,7 @@ siege -c30 –t10S   --content-type "application/json" 'http://localhost:8081/cl
 
 - seige 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
-siege -50 –t30S  -v -r --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}' 
+siege -c50 –t30S  -v -r --content-type "application/json" 'http://localhost:8081/classes POST {"courseId":2}' 
 
 ** SIEGE 4.0.5
 ** Preparing 100 concurrent users for battle.
