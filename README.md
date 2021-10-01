@@ -1079,7 +1079,7 @@ siege -c30 –t10S   --content-type "application/json" 'http://localhost:8081/cl
 
 
 
-## 무정지 재배포
+## Readiness Probe
 
 * 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 CB 설정을 제거함
 
