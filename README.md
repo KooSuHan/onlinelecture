@@ -1028,7 +1028,7 @@ phases:
 - class 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. CPU 사용량이 10%를 넘으면 replica 를 최대 10개까지 늘릴 수 있도록 설정해준다.(초기 50%로 설정을 잡으니 부하를 아무리 넣어도 replica가 증가하지 않는다) 
 
 ```
-kubectl autoscale deploy class --min=1 --max=10 --cpu-percent=30
+kubectl autoscale deploy class --min=1 --max=10 --cpu-percent=10
 ```
 
 - siege를 통해 부하를 넣어준다. (siege.yaml파일을 만들어 작업 :kubectl apply -f siege.yaml)   
