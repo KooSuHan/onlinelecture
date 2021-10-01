@@ -1327,24 +1327,12 @@ pod/mypod created
 storageclass.storage.k8s.io "aws-efs" not found 를 찾지 못하여 실패하였다.
 
 ```
-
-root@labs-389288629:/home/project/project/configmap# kubectl describe pvc -n user02
-Name:          aws-efs
-Namespace:     user02
-StorageClass:  aws-efs
-Status:        Pending
-Volume:        
-Labels:        <none>
-Annotations:   kubectl.kubernetes.io/last-applied-configuration:
-                 {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"name":"aws-efs","namespace":"user02"},"spec":{"accessModes...
-Finalizers:    [kubernetes.io/pvc-protection]
-Capacity:      
-Access Modes:  
-VolumeMode:    Filesystem
-Mounted By:    <none>
-Events:
-  Type     Reason              Age                From                         Message
-  ----     ------              ----               ----                         -------
-  Warning  ProvisioningFailed  7s (x9 over 2m2s)  persistentvolume-controller  storageclass.storage.k8s.io "aws-efs" not found
-
+root@labs-389288629:/home/project/project/configmap# kubectl get pvc -n user02
+NAME      STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+aws-efs   Pending                                      aws-efs        2m49s
 ```
+
+![pvc_provisioningfail](https://user-images.githubusercontent.com/88864399/135549625-ee4af60d-a6f1-4694-82b5-aafa8c7d544d.png)
+
+
+ 
